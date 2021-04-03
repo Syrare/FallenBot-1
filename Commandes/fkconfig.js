@@ -25,9 +25,9 @@ module.exports.run = async(client, message) => {
     
     const messageAwait = await message.channel.send("Veuillez patienter pendant l'ajout des réactions...");
     
-    await Promise.all(['🕙','⛏️','🌐','🔰','👥','👼','🔗','🔔','📑'].map(r => messageAwait.react(r)))
+    await Promise.all(['🕙','⛏️','🌐','🔰','👥','👼','🔗','🔔','📑','✅','❌'].map(r => messageAwait.react(r)))
     
-    await messageAwait.edit(`:clock10: **Définir la date.** Syntaxe recommandée : \`jj/mm/aaaa | HHhMM\`\n:pick: **Définir la version de Minecraft.** Exemple de syntaxe recommandée : \`1.16.5\`\n:globe_with_meridians: **Activer ou non la présence de versions crackées.** À définir via la réaction *(boolean)* | Par défaut la présence des versions crackées est désactivée\n:beginner: **Définir le nombre d'équipes.** Exemple de syntaxe recommandée : \`3 VS 3\`\n:busts_in_silhouette: **Définir le nombre de joueurs par équipe.** Exemple de syntaxe recommandée : \`2\`\n:angel: **Activer ou non la présence d'un Dieu.** À définir via réaction *(boolean)* | Par défaut la présence d'un Dieu est désactivée\n:link: **Définir ou pas un serveur Discord.** À définir via réaction | Par défaut la présence de serveur Discord est désactivée, si elle est activée voici la syntaxe recommandée : \`https://discord.com/invite/xxxxxxx\`\n:bell: **Désactiver ou non la mention de potentiels joueurs.** À définir via réaction *(boolean)* | Par défaut la mention de potentiels joueurs est activée\n:bookmark_tabs: **Définir des informations complémentaires.**`)
+    await messageAwait.edit(`:clock10: **Définir la date.** Syntaxe recommandée : \`jj/mm/aaaa | HHhMM\`\n:pick: **Définir la version de Minecraft.** Exemple de syntaxe recommandée : \`1.16.5\`\n:globe_with_meridians: **Activer ou non la présence de versions crackées.** À définir via la réaction *(boolean)* | Par défaut la présence des versions crackées est désactivée\n:beginner: **Définir le nombre d'équipes.** Exemple de syntaxe recommandée : \`3 VS 3\`\n:busts_in_silhouette: **Définir le nombre de joueurs par équipe.** Exemple de syntaxe recommandée : \`2\`\n:angel: **Activer ou non la présence d'un Dieu.** À définir via réaction *(boolean)* | Par défaut la présence d'un Dieu est désactivée\n:link: **Définir ou pas un serveur Discord.** À définir via réaction | Par défaut la présence de serveur Discord est désactivée, si elle est activée voici la syntaxe recommandée : \`https://discord.com/invite/xxxxxxx\`\n:bell: **Désactiver ou non la mention de potentiels joueurs.** À définir via réaction *(boolean)* | Par défaut la mention de potentiels joueurs est activée\n:bookmark_tabs: **Définir des informations complémentaires.**\n:white_check_mark: **Valider l'intégration (l'_embed_).**\n:x: **Annuler l'organisation de la partie.**\n\n__Executez __\`cancel\`__ après une question pour annuler.__`)
     
     const filterReaction = (reaction, user) => user.id === message.author.id && !user.bot;
     const filterMessage = (m) => m.author.id === message.author.id && !m.author.bot;
@@ -241,6 +241,26 @@ module.exports.run = async(client, message) => {
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
                 }
+            break;
+
+            case '✅':
+                reaction.users.remove(message.author.id)
+                message.channel.bulkDelete(2, true)
+                message.channel.send("Votre configuration a été sauvegardée avec succès. Exécutez la commande `/fksend` pour envoyer une annonce à votre Fallen Kingdom dans le salon <#484765007427665920>")
+            break;
+
+            case '❌':
+                reaction.users.remove(message.author.id)
+                message.channel.bulkDelete(2, true)
+                fkconfig["date"] = "Indéfinie";
+                fkconfig["minecraft_version"] = "Indéfinie";
+                fkconfig["online-mode?"] = ":x:";
+                fkconfig["teams_count"] = "Indéfini";
+                fkconfig["team_size"] = "Indéfini";
+                fkconfig["god?"] = ":x:";
+                fkconfig["discord_server?"] = ":x:";
+                fkconfig["notifs-fk?"] = ":white_check_mark:";
+                fkconfig["infos"] = "Aucune information complémentaire";
             break;
         }
     })
