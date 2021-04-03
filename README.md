@@ -1,2 +1,7 @@
-# FallenBot
-Bot Discord pour organiser ses parties de Fallen Kingdoms
+FallenBot v0.1
+=======
+Ce projet a pour but de gérer les organisations de parties du [serveur Discord Devsylone](https://discord.gg/SmAAFxh) pour le plugin Minecraft [FallenKingdom](https://github.com/Etrenak/FallenKingdom).
+
+Fonctionnement
+--------------
+FallenBot est un bot [Discord](https://discord.com/) créé pour organiser ses propres parties de Fallen Kingdom du [serveur Discord Devsylone](https://discord.gg/SmAAFxh)

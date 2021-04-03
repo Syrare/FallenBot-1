@@ -1,0 +1,23 @@
+{
+  "name": "fallenbot",
+  "version": "1.0.0",
+  "description": "Bot Discord pour organiser ses parties de Fallen Kingdoms",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/IkaRio198/FallenBot.git"
+  },
+  "author": "Devsylone",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/IkaRio198/FallenBot/issues"
+  },
+  "homepage": "https://github.com/IkaRio198/FallenBot#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "fs": "0.0.1-security"
+  }
+}
