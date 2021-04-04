@@ -1,0 +1,12 @@
+
+MODIFICATION = [*]
+AJOUT        = [+]
+RETRAIT      = [-]
+
+
+    >> 1.0.1
+[+] Désormais, les réponses aux questions sont filtrés afin qu'elles soient logiques
+[+] Ajout d'un temps d'expiration à une question
+[*] Correction d'un bug où le bot crashait si l'utilisateur ne répondait pas à une question
+[*] Correction d'un bug où la configuration n'était pas correctement réinitialisée lors de l'annulation
+[*] Correction de la langue
