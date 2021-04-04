@@ -3,9 +3,9 @@ const fs = require("fs");
 
 module.exports = (client, message) => {
   
-    if(!message.content.startsWith("/")) return;
+    if(!message.content.startsWith("$")) return;
 
-            const args = message.content.slice("/".length).trim().split(/ +/g);
+            const args = message.content.slice("$".length).trim().split(/ +/g);
         const commande = args.shift();
     
         const cmd = client.commands.get(commande);
