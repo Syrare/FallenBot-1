@@ -10,3 +10,13 @@ RETRAIT      = [-]
 [*] Correction d'un bug où le bot crashait si l'utilisateur ne répondait pas à une question
 [*] Correction d'un bug où la configuration n'était pas correctement réinitialisée lors de l'annulation
 [*] Correction de la langue
+--------
+
+    >> 1.1.0
+[+] Ajout du support de la personnalisation de la couleurs des annonces
+[+] Ajout d'une vérification de salon
+[+] Ajout d'une pseudo file d'attente, si une personne est déjà en train de configurer son FK, le salon est bloqué jusqu'à que son annonce soit envoyée
+[+] Ajout d'un lien pour signaler un bug
+[+] Ajouts mineurs afin que les annonces soient plus propres
+[*] Les informations de l'annonce sont désormais mis automatiquement à caractères gras
+[*] Correction d'un bug sur les temps d'expirations des questions (bot qui spam cancel)

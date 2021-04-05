@@ -1,13 +1,29 @@
+const { time } = require('console');
 const Discord = require('discord.js');
 const fs = require('fs');
 const fkconfig = require('../fkconfig.json');
+const expirationTime = 300000; 
 
 module.exports.run = async(client, message) => {
+    if (message.member.lastMessageChannelID.includes("828253032491647016")) {
+        
+        message.guild.channels.cache.get('828253032491647016').overwritePermissions([
+            {
+                id: message.guild.roles.everyone.id,
+               deny: ['VIEW_CHANNEL'],
+            },
+            {
+                id: message.author.id,
+                allow: ['VIEW_CHANNEL'],
+            }
+          ]);
+
     message.delete();
     let defaultEmbed = new Discord.MessageEmbed()
-    .setColor('#137911')
+    .setColor(`${fkconfig["color"]}`)
     .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
     .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
+    .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
     .setDescription(`
     \n\n:person_frowning: Hôte : ${message.author}
     \n:clock10: Date : ${fkconfig["date"]}
@@ -19,15 +35,16 @@ module.exports.run = async(client, message) => {
     \n:link: Serveur Discord : ${fkconfig["discord_server?"]}
     \n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}
     \n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}
+    \n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)
     `);
     
     let editingEmbed = await message.channel.send(defaultEmbed)
     
     const messageAwait = await message.channel.send("Veuillez patienter pendant l'ajout des réactions...");
     
-    await Promise.all(['🕙','⛏️','🌐','🔰','👥','👼','🔗','🔔','📑','✅','❌'].map(r => messageAwait.react(r)))
+    await Promise.all(['🕙','⛏️','🌐','🔰','👥','👼','🔗','🔔','📑','🌈','✅','❌'].map(r => messageAwait.react(r)))
     
-    await messageAwait.edit(`:clock10: **Définir la date.** Syntaxe : \`jj/mm/aaaa | HHhMM\`\n:pick: **Définir la version de Minecraft.** Exemple de la syntaxe : \`1.16.5\`\n:globe_with_meridians: **Activer ou non la présence de versions crackées.** À définir via la réaction *(boolean)* | Par défaut la présence des versions crackées est désactivée\n:beginner: **Définir le nombre d'équipes.** Exemple de la syntaxe : \`3\`\n:busts_in_silhouette: **Définir le nombre de joueurs par équipe.** Exemple de la syntaxe : \`2\`\n:angel: **Activer ou non la présence d'un Dieu.** À définir via réaction *(boolean)* | Par défaut la présence d'un Dieu est désactivée\n:link: **Définir ou pas un serveur Discord.** À définir via réaction | Par défaut la présence de serveur Discord est désactivée, si elle est activée voici un exemple de la syntaxe : \`https://discord.gg/SmAAFxh\`\n:bell: **Désactiver ou non la mention de potentiels joueurs.** À définir via réaction *(boolean)* | Par défaut la mention de potentiels joueurs est activée\n:bookmark_tabs: **Définir des informations complémentaires.**\n:white_check_mark: **Valider l'intégration (l'_embed_).**\n:x: **Annuler l'organisation de la partie.**\n\n__Exécutez __\`cancel\`__ après une question pour annuler.__`)
+    await messageAwait.edit(`:clock10: **Définir la date.** Syntaxe : \`jj/mm/aaaa | HHhMM\`\n:pick: **Définir la version de Minecraft.** Exemple de la syntaxe : \`1.16.5\`\n:globe_with_meridians: **Activer ou non la présence de versions crackées.** À définir via la réaction *(boolean)* | Par défaut la présence des versions crackées est désactivée\n:beginner: **Définir le nombre d'équipes.** Exemple de la syntaxe : \`3\`\n:busts_in_silhouette: **Définir le nombre de joueurs par équipe.** Exemple de la syntaxe : \`2\`\n:angel: **Activer ou non la présence d'un Dieu.** À définir via réaction *(boolean)* | Par défaut la présence d'un Dieu est désactivée\n:link: **Définir ou pas un serveur Discord.** À définir via réaction | Par défaut la présence de serveur Discord est désactivée, si elle est activée voici un exemple de la syntaxe : \`https://discord.gg/SmAAFxh\`\n:bell: **Désactiver ou non la mention de potentiels joueurs.** À définir via réaction *(boolean)* | Par défaut la mention de potentiels joueurs est activée\n:bookmark_tabs: **Définir des informations complémentaires.**\n:rainbow: **Changer la couleur de l'intégration (l'_embed_).** À définir via réaction | Par défaut la couleur est vert foncé (\`#137911\`)\n:white_check_mark: **Valider l'intégration (l'_embed_).**\n:x: **Annuler l'organisation de la partie.**\n\n__Exécutez __\`cancel\`__ après une question pour annuler.__`)
     
     const filterReaction = (reaction, user) => user.id === message.author.id && !user.bot;
     const filterMessage = (m) => m.author.id === message.author.id || m.author.bot;
@@ -39,10 +56,16 @@ module.exports.run = async(client, message) => {
             case '🕙':
                 reaction.users.remove(message.author.id)
                 const messageQuestionDate = await message.channel.send("Quel est la date de votre Fallen Kingdom ?")
+                let firstMessageDate = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                if (!firstMessageDate) {
+                firstMessageDate = `${fkconfig["date"]}`
+                fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
-                    message.channel.send("cancel")
-                }, 297500);
-                const date = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                    message.channel.bulkDelete(2, true)
+                }, expirationTime);
+                } else {
+                const date = firstMessageDate.content;
                 jj =  (date.charAt(0) + date.charAt(1))
                 mm = (date.charAt(3) + date.charAt(4))
                 aaaa = (date.charAt(6) + date.charAt(7) + date.charAt(8) + date.charAt(9))
@@ -57,10 +80,11 @@ module.exports.run = async(client, message) => {
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
@@ -70,16 +94,23 @@ module.exports.run = async(client, message) => {
                         message.channel.bulkDelete(3, true)
                     }, 5000);
                 }
+            }
 
             break;
 
             case '⛏️':
                 reaction.users.remove(message.author.id)
                 const messageQuestionMinecraftVersion = await message.channel.send("Quel est la version de Minecraft pour jouer à votre Fallen Kingdom ?")
-                setTimeout(() => {
-                    message.channel.send("cancel")
-                }, 297500);
-                const minecraft_version = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                let firstMessageMinecraftVersion = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime })).first();
+                if (!firstMessageMinecraftVersion) {
+                    firstMessageMinecraftVersion = `${fkconfig["minecraft_version"]}`
+                    fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    message.channel.send("Annulation... le temps de réponse a expiré.")
+                    setTimeout(() => {
+                        message.channel.bulkDelete(2, true)
+                    }, expirationTime);
+                    } else {
+                const minecraft_version = firstMessageMinecraftVersion.content;
 
                 if (minecraft_version === "cancel") {
                     message.channel.bulkDelete(2, true)
@@ -89,10 +120,11 @@ module.exports.run = async(client, message) => {
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
@@ -102,6 +134,7 @@ module.exports.run = async(client, message) => {
                         message.channel.bulkDelete(3, true)
                     }, 5000);
                 }
+            }
             break;
 
             case '🌐':
@@ -116,10 +149,11 @@ module.exports.run = async(client, message) => {
                 }
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
             break;
@@ -127,10 +161,16 @@ module.exports.run = async(client, message) => {
             case '🔰':
                 reaction.users.remove(message.author.id)
                 const messageQuestionTeamsCount = await message.channel.send("Combien y a t-il d'équipes ?")
+                let firstMessageTeamsCount = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                if (!firstMessageTeamsCount) {
+                firstMessageTeamsCount = `${fkconfig["teams_count"]}`
+                fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
-                    message.channel.send("cancel")
-                }, 297500);
-                const teams_count = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                    message.channel.bulkDelete(2, true)
+                }, expirationTime);
+                } else {
+                const teams_count = firstMessageTeamsCount.content;
 
                 if (teams_count === "cancel") {
                     message.channel.bulkDelete(2, true)
@@ -140,10 +180,11 @@ module.exports.run = async(client, message) => {
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
@@ -153,15 +194,22 @@ module.exports.run = async(client, message) => {
                         message.channel.bulkDelete(3, true)
                     }, 5000);
                 }
+            }
             break;
 
             case '👥':
                 reaction.users.remove(message.author.id)
                 const messageQuestionTeamSize = await message.channel.send("Combien y a t-il de joueurs par équipe ?")
+                let firstMessageTeamSize = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                if (!firstMessageTeamSize) {
+                firstMessageTeamSize = `${fkconfig["team_size"]}`
+                fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
-                    message.channel.send("cancel")
-                }, 297500);
-                const team_size = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                    message.channel.bulkDelete(2, true)
+                }, expirationTime);
+                } else {
+                const team_size = firstMessageTeamSize.content;
 
                 if (team_size === "cancel") {
                     message.channel.bulkDelete(2, true)
@@ -170,10 +218,11 @@ module.exports.run = async(client, message) => {
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
@@ -183,6 +232,7 @@ module.exports.run = async(client, message) => {
                         message.channel.bulkDelete(3, true)
                     }, 5000);
                 }
+            }
             break;
 
             case '👼':
@@ -197,10 +247,11 @@ module.exports.run = async(client, message) => {
                 }
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
             break;
@@ -210,10 +261,16 @@ module.exports.run = async(client, message) => {
 
                 if (`${fkconfig["discord_server?"]}` === ":x:") {
                     const messageQuestionDiscordServer = await message.channel.send("Quel est le lien du serveur Discord pour le Fallen Kingdom ?\n:warning: Les serveurs Discord avec du contenu innaproprié sont interdits : <#760937246907433044> :warning:")
+                    let firstMessageDiscordServer = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                    if (!firstMessageDiscordServer) {
+                    firstMessageDiscordServer = `${fkconfig["discord_server?"]}`
+                    fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    message.channel.send("Annulation... le temps de réponse a expiré.")
                     setTimeout(() => {
-                        message.channel.send("cancel")
-                    }, 297500);
-                    const discord_server = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                        message.channel.bulkDelete(2, true)
+                    }, expirationTime);
+                    } else {
+                    const discord_server = firstMessageDiscordServer.content;
                     if (discord_server === "cancel") {
                         message.channel.bulkDelete(2, true)
                         } else if (discord_server.includes("https://discord.gg/")) {
@@ -226,18 +283,20 @@ module.exports.run = async(client, message) => {
                                 message.channel.bulkDelete(3, true)
                             }, 5000);
                         }
-                } else {
-                fkconfig["discord_server?"] = ":x:"
-                fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
-                }
-    
-                defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
-                .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
-                .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
-    
-                    editingEmbed.edit(defaultEmbed)
+            }
+        } else {
+            fkconfig["discord_server?"] = ":x:"
+            fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+            }
+            defaultEmbed = new Discord.MessageEmbed()
+            .setColor(`${fkconfig["color"]}`)
+            .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
+            .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
+            .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+            .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
+
+                editingEmbed.edit(defaultEmbed)
+
             break;
 
             case '🔔':
@@ -252,10 +311,11 @@ module.exports.run = async(client, message) => {
                 }
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
             break;
@@ -263,10 +323,16 @@ module.exports.run = async(client, message) => {
             case '📑':
                 reaction.users.remove(message.author.id)
                 const messageQuestionInfos = await message.channel.send("Quels sont vos informations complémtentaires ?")
+                let firstMessageInfos = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                if (!firstMessageInfos) {
+                firstMessageInfos = `${fkconfig["infos"]}`
+                fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
-                    message.channel.send("cancel")
-                }, 297500);
-                const infos = (await message.channel.awaitMessages(filterMessage, {max: 1, time: 300000})).first().content;
+                    message.channel.bulkDelete(2, true)
+                }, expirationTime);
+                } else {
+                const infos = firstMessageInfos.content;
 
                 if (infos === "cancel") {
                     message.channel.bulkDelete(2, true)
@@ -276,20 +342,82 @@ module.exports.run = async(client, message) => {
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
     
                 defaultEmbed = new Discord.MessageEmbed()
-                .setColor('#137911')
+                .setColor(`${fkconfig["color"]}`)
                 .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
                 .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
-                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
     
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
                 }
+            }
+            break;
+
+            case '🌈':
+                reaction.users.remove(message.author.id)
+
+
+                switch(`${fkconfig["color"]}`) {
+                    case '#137911': // Si la couleur par défaut
+                        fkconfig["color"] = "#000000" // Passer au noir
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#000000': // Si la couleur noire
+                        fkconfig["color"] = "#fffefe" // Passer au blanc
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#fffefe': // Si la couleur blanche
+                        fkconfig["color"] = "#ff8c00" // Passer au orange
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#ff8c00': // Si la couleur orange
+                        fkconfig["color"] = "#0000ff" // Passer au bleu
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#0000ff': // Si la couleur bleue
+                        fkconfig["color"] = "#ff0000" // Passer au rouge
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#ff0000': // Si la couleur rouge
+                        fkconfig["color"] = "#8b4513" // Passer au marron
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#8b4513': // Si la couleur marron
+                        fkconfig["color"] = "#800080" // Passer au violet
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#800080': // Si la couleur violette
+                        fkconfig["color"] = "#00ff00" // Passer au vert
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#00ff00': // Si la couleur verte
+                        fkconfig["color"] = "#ffff00" // Passer au jaune
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                    case '#ffff00': // Si la couleur jaune
+                        fkconfig["color"] = "#137911" // Passer à la couleur par défaut
+                        fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+                    break;
+                }
+
+                defaultEmbed = new Discord.MessageEmbed()
+                .setColor(`${fkconfig["color"]}`)
+                .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
+                .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
+                .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                .setDescription(`\n\n\n:person_frowning: Hôte : ${message.author}\n\n:clock10: Date : ${fkconfig["date"]}\n\n:pick: Version de Minecraft : ${fkconfig["minecraft_version"]}\n\n:globe_with_meridians: Version crackée (\`online-mode\`) : ${fkconfig["online-mode?"]}\n\n:beginner: Nombre d\'équipes : ${fkconfig["teams_count"]}\n\n:busts_in_silhouette: Nombre de joueurs par équipe : ${fkconfig["team_size"]}\n\n:angel: Présence d\'un Dieu : ${fkconfig["god?"]}\n\n:link: Serveur Discord : ${fkconfig["discord_server?"]}\n\n:bell: Notifier les potentiels joueurs : ${fkconfig["notifs-fk?"]}\n\n:page_facing_up: Informations complémentaires : ${fkconfig["infos"]}\n\n\n        → [Signaler un bug](https://github.com/IkaRio198/FallenBot/issues/new)`)
+    
+                    editingEmbed.edit(defaultEmbed)
             break;
 
             case '✅':
                 reaction.users.remove(message.author.id)
                 message.channel.bulkDelete(2, true)
-                message.channel.send("Votre configuration a été sauvegardée avec succès. Exécutez la commande `$fksend` pour envoyer une annonce à votre Fallen Kingdom dans le salon <#484765007427665920>")
+                message.channel.send("Votre configuration a été sauvegardée avec succès. Quand ce message disparaîtra, exécutez la commande `$fksend` pour envoyer une annonce à votre Fallen Kingdom dans le salon <#484765007427665920>")
+                setTimeout(() => {
+                    message.channel.bulkDelete(1, true)
+                }, 10000);
             break;
 
             case '❌':
@@ -304,10 +432,20 @@ module.exports.run = async(client, message) => {
                 fkconfig["discord_server?"] = ":x:";
                 fkconfig["notifs-fk?"] = ":white_check_mark:";
                 fkconfig["infos"] = "Aucune information complémentaire";
+                fkconfig["color"] = "#137911";
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
             break;
         }
     })
+} else {
+    message.delete()
+    message.author.send(new Discord.MessageEmbed()
+    .setColor('#AF1111')
+    .setTitle("FallenBot - Erreur")
+    .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+    .setDescription(`Les commandes doivent être exécutées exclusivement dans le salon <#828253032491647016> !`)
+    )
+};
 };
 
     
