@@ -87,6 +87,7 @@ module.exports.run = (client, message) => {
                    allow: ['VIEW_CHANNEL'],
                 }
               ]);
+              message.guild.channels.cache.get('828253032491647016').updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
         }
     } else {
         message.delete()

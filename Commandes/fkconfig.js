@@ -434,6 +434,14 @@ module.exports.run = async(client, message) => {
                 fkconfig["infos"] = "Aucune information complémentaire";
                 fkconfig["color"] = "#137911";
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+
+                message.guild.channels.cache.get('828253032491647016').overwritePermissions([
+                    {
+                        id: message.guild.roles.everyone.id,
+                       allow: ['VIEW_CHANNEL'],
+                    }
+                  ]);
+                  message.guild.channels.cache.get('828253032491647016').updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
             break;
         }
     })

@@ -20,3 +20,7 @@ RETRAIT      = [-]
 [+] Ajouts mineurs afin que les annonces soient plus propres
 [*] Les informations de l'annonce sont désormais mis automatiquement à caractères gras
 [*] Correction d'un bug sur les temps d'expirations des questions (bot qui spam cancel)
+
+    >> 1.1.1
+[*] Correction d'un bug sur les persmissions du salon
+[*] Prise en charge de l'hébergement
