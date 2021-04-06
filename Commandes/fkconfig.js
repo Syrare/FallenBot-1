@@ -1,13 +1,15 @@
-const { time } = require('console');
 const Discord = require('discord.js');
 const fs = require('fs');
 const fkconfig = require('../fkconfig.json');
+const infos = require('../infos.json');
 const expirationTime = 300000; 
+const fkChannel = "828253032491647016";
+const fkAnnouncementChannel = "484765007427665920";
 
 module.exports.run = async(client, message) => {
-    if (message.member.lastMessageChannelID.includes("828253032491647016")) {
+    if (message.member.lastMessageChannelID.includes(fkChannel)) {
         
-        message.guild.channels.cache.get('828253032491647016').overwritePermissions([
+        message.guild.channels.cache.get(fkChannel).overwritePermissions([
             {
                 id: message.guild.roles.everyone.id,
                deny: ['VIEW_CHANNEL'],
@@ -413,11 +415,41 @@ module.exports.run = async(client, message) => {
 
             case '✅':
                 reaction.users.remove(message.author.id)
-                message.channel.bulkDelete(2, true)
-                message.channel.send("Votre configuration a été sauvegardée avec succès. Quand ce message disparaîtra, exécutez la commande `$fksend` pour envoyer une annonce à votre Fallen Kingdom dans le salon <#484765007427665920>")
+                const messageFkSendConfirmation = await message.channel.send(`**:warning: ATTENTION :warning:**\nVous êtes sur le point d'envoyer votre annonce dans le salon <#${fkAnnouncementChannel}>. Êtes-vous sûr de vouloir envoyer votre annonce ? Si oui, exécutez \`confirm\`, si non, exécutez \`cancel\`.`)
+                let firstMessageConfirmation = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
+                if (!firstMessageConfirmation) {
+                message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
-                    message.channel.bulkDelete(1, true)
-                }, 10000);
+                    message.channel.bulkDelete(2, true)
+                }, expirationTime);
+                } else {
+                const confirmation = firstMessageConfirmation.content;
+
+                if (confirmation === "cancel") {
+                    message.channel.bulkDelete(2, true)
+                    } else if (confirmation === "confirm") {
+                        infos["latestUserID"] = message.author.id; // Comme c'est le bot qui envoie la commande $fksend, c'est FallenBot l'auteur de celui-ci donc on sauvegarde le vrai auteur pour fksend.js
+                        infos["latestUserUsername"] = message.author.username;
+                        infos["latestUserTag"] = message.author.tag;
+                        infos["latestUserAvatar"] = message.author.displayAvatarURL();
+                        fs.writeFileSync('./infos.json', JSON.stringify(infos))
+                        message.channel.send(`$fksend`)
+                        message.author.send(new Discord.MessageEmbed()
+                        .setColor('#137911')
+                        .setTitle("FallenBot")
+                        .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+                        .setDescription(`Nous vous remercions d'avoir utilisé [FallenBot](https://github.com/IkaRio198/FallenBot) !\n       → N'hésitez pas à nous laisser un avis dans <#353483147582636032> !`)
+                        )
+                        setTimeout(() => {
+                            message.channel.bulkDelete(5, true)
+                        }, 1000);
+                } else {
+                    message.channel.send(`Annulation... \`${message.author.lastMessage}\` n'est pas une réponse attendue. Veuillez réessayer avec une des deux réponses proposées précedemment.`);
+                    setTimeout(() => {
+                        message.channel.bulkDelete(3, true)
+                    }, 5000);
+                }
+            }
             break;
 
             case '❌':
@@ -435,24 +467,24 @@ module.exports.run = async(client, message) => {
                 fkconfig["color"] = "#137911";
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
 
-                message.guild.channels.cache.get('828253032491647016').overwritePermissions([
+                message.guild.channels.cache.get(fkChannel).overwritePermissions([
                     {
                         id: message.guild.roles.everyone.id,
                        allow: ['VIEW_CHANNEL'],
                     }
                   ]);
-                  message.guild.channels.cache.get('828253032491647016').updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
+                  message.guild.channels.cache.get(fkChannel).updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
             break;
         }
     })
 } else {
-    message.delete()
+    message.delete();
     message.author.send(new Discord.MessageEmbed()
     .setColor('#AF1111')
     .setTitle("FallenBot - Erreur")
     .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
-    .setDescription(`Les commandes doivent être exécutées exclusivement dans le salon <#828253032491647016> !`)
-    )
+    .setDescription(`Les commandes doivent être exécutées exclusivement dans le salon <#${fkChannel}> !`)
+    );
 };
 };
 

@@ -1,19 +1,31 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const fkconfig = require('../fkconfig.json');
+const infos = require('../infos.json');
+const fkChannel = "828253032491647016"; // ID de #créez-votre-fk
+const fkAnnouncementChannel = "484765007427665920"; // ID de #orga-fk-annonces
 
-module.exports.run = (client, message) => {
-    if (message.member.lastMessageChannelID.includes("828253032491647016")) {
-    message.delete()
+module.exports.run = async(client, message) => {
+    if (message.author.id != "827879220214366268") {
+        message.delete()
+        message.author.send(new Discord.MessageEmbed()
+    .setColor('#AF1111')
+    .setTitle("FallenBot - Erreur")
+    .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+    .setDescription(`Vous ne pouvez pas exécuté cette commande.`));
+    } else { 
+
 
         if (`${fkconfig["notifs-fk?"]}` === ":white_check_mark:") {
+            infos["fkAnnouncmentSent"] = infos["fkAnnouncmentSent"] + 1;
+            fs.writeFileSync('./infos.json', JSON.stringify(infos));
 
-        client.channels.cache.get("484765007427665920").send(new Discord.MessageEmbed()
+        client.channels.cache.get(fkAnnouncementChannel).send(new Discord.MessageEmbed()
         .setColor(`${fkconfig["color"]}`)
-        .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
-        .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
+        .setAuthor(`${infos["latestUserTag"]}`, `${infos["latestUserAvatar"]}`)
+        .setTitle(`Fallen Kingdom organisé par ${infos["latestUserUsername"]}`)
         .setDescription(`
-        \n\n:person_frowning: Hôte : **${message.author}**
+        \n\n:person_frowning: Hôte : **<@${infos["latestUserID"]}>**
         \n:clock10: Date : **${fkconfig["date"]}**
         \n:pick: Version de Minecraft : **${fkconfig["minecraft_version"]}**
         \n:globe_with_meridians: Version crackée (\`online-mode\`) : **${fkconfig["online-mode?"]}**
@@ -22,13 +34,13 @@ module.exports.run = (client, message) => {
         \n:angel: Présence d\'un Dieu : **${fkconfig["god?"]}**
         \n:link: Serveur Discord : **${fkconfig["discord_server?"]}**
         \n:page_facing_up: Informations complémentaires : **${fkconfig["infos"]}**
-        \n→ N'hésite pas à envoyer un message privé à ${message.author} pour obtenir plus de détails !
+        \n→ N'hésite pas à envoyer un message privé à <@${infos["latestUserID"]}> pour obtenir plus de détails !
         \n\n<@&530837337597411338>
         \n\n:tools: Vous aussi, vous voulez créer votre **propre** annonce pour **votre** Fallen Kingdom ?
-        \n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)
-        `))
-        message.channel.send("<@&530837337597411338>")
-        message.delete()
+        \n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)`)
+        .setFooter(`Ceci est l'annonce n°${infos["fkAnnouncmentSent"]} envoyée par FallenBot !`)
+        );
+        client.channels.cache.get(fkAnnouncementChannel).send("<@&530837337597411338>"/*← ID du rôle @Notif FK*/).then(msg => msg.delete({timeout: 500}));
 
         fkconfig["date"] = "Indéfinie";
         fkconfig["minecraft_version"] = "Indéfinie";
@@ -42,20 +54,28 @@ module.exports.run = (client, message) => {
         fkconfig["color"] = "#137911";
         fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
 
-        message.guild.channels.cache.get('828231320358486026').overwritePermissions([
+        message.guild.channels.cache.get(fkChannel).overwritePermissions([
             {
                 id: message.guild.roles.everyone.id,
                allow: ['VIEW_CHANNEL'],
             }
           ]);
+          message.guild.channels.cache.get(fkChannel).updateOverwrite(infos["latestUserID"], { VIEW_CHANNEL: null });
+          infos["latestUserID"] = "";
+          infos["latestUserUsername"] = "";
+          infos["latestUserTag"] = "";
+          infos["latestUserAvatar"] = "";
+          fs.writeFileSync('./infos.json', JSON.stringify(infos))
         } else {
+            infos["fkAnnouncmentSent"] = infos["fkAnnouncmentSent"] + 1;
+            fs.writeFileSync('./infos.json', JSON.stringify(infos));
 
-            client.channels.cache.get("484765007427665920").send(new Discord.MessageEmbed()
+            client.channels.cache.get(fkAnnouncementChannel).send(new Discord.MessageEmbed()
             .setColor(`${fkconfig["color"]}`)
-            .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
-            .setTitle(`Fallen Kingdom organisé par ${message.author.username}`)
+            .setAuthor(`${infos["latestUserTag"]}`, `${infos["latestUserAvatar"]}`)
+            .setTitle(`Fallen Kingdom organisé par ${infos["latestUserUsername"]}`)
             .setDescription(`
-            \n\n:person_frowning: Hôte : **${message.author}**
+            \n\n:person_frowning: Hôte : **<@${infos["latestUserID"]}>**
             \n:clock10: Date : **${fkconfig["date"]}**
             \n:pick: Version de Minecraft : **${fkconfig["minecraft_version"]}**
             \n:globe_with_meridians: Version crackée (\`online-mode\`) : **${fkconfig["online-mode?"]}**
@@ -64,10 +84,11 @@ module.exports.run = (client, message) => {
             \n:angel: Présence d\'un Dieu : **${fkconfig["god?"]}**
             \n:link: Serveur Discord : **${fkconfig["discord_server?"]}**
             \n:page_facing_up: Informations complémentaires : **${fkconfig["infos"]}**
-            \n→ N'hésite pas à envoyer un message privé à ${message.author} pour obtenir plus de détails !
+            \n→ N'hésite pas à envoyer un message privé à <@${infos["latestUserID"]}> pour obtenir plus de détails !
             \n\n:tools: Vous aussi, vous voulez créer votre **propre** annonce pour **votre** Fallen Kingdom ?
-            \n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)
-            `));
+            \n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)`)
+            .setFooter(`Ceci est l'annonce n°${infos["fkAnnouncmentSent"]} envoyée par FallenBot !`)
+            );
     
             fkconfig["date"] = "Indéfinie";
             fkconfig["minecraft_version"] = "Indéfinie";
@@ -79,26 +100,24 @@ module.exports.run = (client, message) => {
             fkconfig["notifs-fk?"] = ":white_check_mark:";
             fkconfig["infos"] = "Aucune information complémentaire";
             fkconfig["color"] = "#137911";
-            fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+            fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig));
 
-            message.guild.channels.cache.get('828253032491647016').overwritePermissions([
+            message.guild.channels.cache.get(fkChannel).overwritePermissions([
                 {
                     id: message.guild.roles.everyone.id,
                    allow: ['VIEW_CHANNEL'],
                 }
               ]);
-              message.guild.channels.cache.get('828253032491647016').updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
+              message.guild.channels.cache.get(fkChannel).updateOverwrite(infos["latestUserID"], { VIEW_CHANNEL: null });
+              infos["latestUserID"] = "";
+              infos["latestUserUsername"] = "";
+              infos["latestUserTag"] = "";
+              infos["latestUserAvatar"] = "";
+              fs.writeFileSync('./infos.json', JSON.stringify(infos))
         }
-    } else {
-        message.delete()
-        message.author.send(new Discord.MessageEmbed()
-        .setColor('#AF1111')
-        .setTitle("FallenBot - Erreur")
-        .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
-        .setDescription(`Les commandes doivent être exécutées exclusivement dans le salon <#828253032491647016> !`)
-        )
-    };
     }
+}
+    
 
 module.exports.help = {
     name: "fksend"

@@ -1,4 +1,4 @@
-FallenBot v1.1.1
+FallenBot v1.2.0
 =======
 Ce projet a pour but de gérer les organisations de parties du [serveur Discord Devsylone](https://discord.gg/SmAAFxh) pour le plugin Minecraft [FallenKingdom](https://github.com/Etrenak/FallenKingdom).
 

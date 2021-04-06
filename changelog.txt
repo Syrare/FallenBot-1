@@ -22,5 +22,12 @@ RETRAIT      = [-]
 [*] Correction d'un bug sur les temps d'expirations des questions (bot qui spam cancel)
 
     >> 1.1.1
-[*] Correction d'un bug sur les persmissions du salon
+[*] Correction d'un bug sur les permissions du salon
 [*] Prise en charge de l'hébergement
+--------
+
+    >> 1.2.0
+[+] Ajout d'un compteur d'annonces de Fallen Kingdoms envoyées par FallenBot
+[*] La commande $fksend ne peut plus être utilisé
+[*] Le code est désormais plus lisible et compréhensible
+[*] Correction d'un bug avec le @Notif FK
