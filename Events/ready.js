@@ -19,7 +19,7 @@ module.exports = async(client) => {
       console.log(error)
   }
 
-  if (VERSION != latest_version.name)
+  if (VERSION != latest_version.tag_name)
     console.warn(`Attention: Vous disposez d'un version obsolète (${VERSION}). Une nouvelle version est disponible (${latest_version.tag_name}).\nPour la télécharger, vous devez procéder à une réinstallation du bot.\n    → https://github.com/Etrenak/FallenKingdom/wiki/FallenBot`);
 
 };
