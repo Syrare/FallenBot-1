@@ -3,16 +3,7 @@ const client = new Discord.Client();
 const fs = require ('fs');
 const token = require('./token.json');
 
-
-if (token["fallenbot_token"] === "PLACEZ LE TOKEN ICI") {
-    console.warn("Attention: Le token n'a pas été défini ! Pour obtenir de l'aide → https://github.com/Etrenak/FallenKingdom/wiki/FallenBot")
-} else {
-client.login(token["fallenbot_token"])
-    .catch(error => {
-        console.error(`Erreur: Token invalide\n${error}`);
-        process.exit(1);
-    });
-}
+client.login(process.env.TOKEN);
 
 client.commands = new Discord.Collection();
 
