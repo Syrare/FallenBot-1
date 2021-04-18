@@ -1,1 +1,1 @@
-exports.VERSION = "v1.3.0";
+exports.VERSION = "v1.3.1";

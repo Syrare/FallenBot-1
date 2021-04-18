@@ -1,6 +1,6 @@
 {
   "name": "fallenbot",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Bot Discord pour organiser ses parties de Fallen Kingdoms",
   "main": "index.js",
   "scripts": {
