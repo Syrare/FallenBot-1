@@ -3,13 +3,23 @@ const fs = require('fs');
 const fkconfig = require('../fkconfig.json');
 const infos = require('../infos.json');
 const expirationTime = 300000; 
-const fkChannel = "828253032491647016";
-const fkAnnouncementChannel = "484765007427665920";
+const config = require('../config.json');
 
 module.exports.run = async(client, message) => {
-    if (message.member.lastMessageChannelID.includes(fkChannel)) {
+        message.delete();
+
+        // Début de la vérification de la config
+        let verfifFkConfig_Channel = client.channels.cache.has(config["fk-config_channel-id"]);
+
+        let verfifFkAnnouncement_Channel = client.channels.cache.has(config["fk-announcement_channel-id"]);
+
+        let verfifNotifFk_Role = message.guild.roles.cache.has(config["notif-fk_role-id"]);
+        // Fin de la vérification de la config
+
+        if (verfifFkConfig_Channel === true && verfifFkAnnouncement_Channel === true && verfifNotifFk_Role === true) { // On envoie l'annonce que si LES TROIS informations sont correctements remplis
+    if (message.member.lastMessageChannelID.includes(config["fk-config_channel-id"])) {
         
-        message.guild.channels.cache.get(fkChannel).overwritePermissions([
+        message.guild.channels.cache.get(config["fk-config_channel-id"]).overwritePermissions([
             {
                 id: message.guild.roles.everyone.id,
                deny: ['VIEW_CHANNEL'],
@@ -20,7 +30,6 @@ module.exports.run = async(client, message) => {
             }
           ]);
 
-    message.delete();
     let defaultEmbed = new Discord.MessageEmbed()
     .setColor(`${fkconfig["color"]}`)
     .setAuthor(`${message.author.tag}`, `${message.author.displayAvatarURL()}`)
@@ -50,7 +59,33 @@ module.exports.run = async(client, message) => {
     
     const filterReaction = (reaction, user) => user.id === message.author.id && !user.bot;
     const filterMessage = (m) => m.author.id === message.author.id || m.author.bot;
-    
+
+    setTimeout(() => {
+        let verfifmessageAwait = message.channel.messages.cache.has(messageAwait.id);
+        if (verfifmessageAwait === true) {
+            message.channel.bulkDelete(50, true)
+            fkconfig["date"] = "Indéfinie";
+            fkconfig["minecraft_version"] = "Indéfinie";
+            fkconfig["online-mode?"] = ":x:";
+            fkconfig["teams_count"] = "Indéfini";
+            fkconfig["team_size"] = "Indéfini";
+            fkconfig["god?"] = ":x:";
+            fkconfig["discord_server?"] = ":x:";
+            fkconfig["notifs-fk?"] = ":white_check_mark:";
+            fkconfig["infos"] = "Aucune information complémentaire";
+            fkconfig["color"] = "#137911";
+            fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
+
+            message.guild.channels.cache.get(config["fk-config_channel-id"]).overwritePermissions([
+                {
+                    id: message.guild.roles.everyone.id,
+                   allow: ['VIEW_CHANNEL'],
+                }
+              ]);
+              message.guild.channels.cache.get(config["fk-config_channel-id"]).updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
+        };
+    }, 1800000);
+
     const collectorReaction = await new Discord.ReactionCollector(messageAwait, filterReaction);
     collectorReaction.on('collect', async reaction => {
         switch(reaction._emoji.name) {
@@ -65,7 +100,7 @@ module.exports.run = async(client, message) => {
                 message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
                     message.channel.bulkDelete(2, true)
-                }, expirationTime);
+                }, 5000);
                 } else {
                 const date = firstMessageDate.content;
                 jj =  (date.charAt(0) + date.charAt(1))
@@ -91,7 +126,7 @@ module.exports.run = async(client, message) => {
                     editingEmbed.edit(defaultEmbed)
                     message.channel.bulkDelete(2, true)
                 } else {
-                    message.channel.send("Annulation... Ceci n'est une date valide.")
+                    message.channel.send("Annulation... Ceci n'est pas une date valide.")
                     setTimeout(() => {
                         message.channel.bulkDelete(3, true)
                     }, 5000);
@@ -110,7 +145,7 @@ module.exports.run = async(client, message) => {
                     message.channel.send("Annulation... le temps de réponse a expiré.")
                     setTimeout(() => {
                         message.channel.bulkDelete(2, true)
-                    }, expirationTime);
+                    }, 5000);
                     } else {
                 const minecraft_version = firstMessageMinecraftVersion.content;
 
@@ -170,7 +205,7 @@ module.exports.run = async(client, message) => {
                 message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
                     message.channel.bulkDelete(2, true)
-                }, expirationTime);
+                }, 5000);
                 } else {
                 const teams_count = firstMessageTeamsCount.content;
 
@@ -209,7 +244,7 @@ module.exports.run = async(client, message) => {
                 message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
                     message.channel.bulkDelete(2, true)
-                }, expirationTime);
+                }, 5000);
                 } else {
                 const team_size = firstMessageTeamSize.content;
 
@@ -270,7 +305,7 @@ module.exports.run = async(client, message) => {
                     message.channel.send("Annulation... le temps de réponse a expiré.")
                     setTimeout(() => {
                         message.channel.bulkDelete(2, true)
-                    }, expirationTime);
+                    }, 5000);
                     } else {
                     const discord_server = firstMessageDiscordServer.content;
                     if (discord_server === "cancel") {
@@ -332,7 +367,7 @@ module.exports.run = async(client, message) => {
                 message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
                     message.channel.bulkDelete(2, true)
-                }, expirationTime);
+                }, 5000);
                 } else {
                 const infos = firstMessageInfos.content;
 
@@ -415,13 +450,13 @@ module.exports.run = async(client, message) => {
 
             case '✅':
                 reaction.users.remove(message.author.id)
-                const messageFkSendConfirmation = await message.channel.send(`**:warning: ATTENTION :warning:**\nVous êtes sur le point d'envoyer votre annonce dans le salon <#${fkAnnouncementChannel}>. Êtes-vous sûr de vouloir envoyer votre annonce ? Si oui, exécutez \`confirm\`, si non, exécutez \`cancel\`.`)
+                const messageFkSendConfirmation = await message.channel.send(`**:warning: ATTENTION :warning:**\nVous êtes sur le point d'envoyer votre annonce dans le salon <#${config["fk-announcement_channel-id"]}>. Êtes-vous sûr de vouloir envoyer votre annonce ? Si oui, exécutez \`confirm\`, si non, exécutez \`cancel\`.`)
                 let firstMessageConfirmation = (await message.channel.awaitMessages(filterMessage, {max: 1, time: expirationTime})).first();
                 if (!firstMessageConfirmation) {
                 message.channel.send("Annulation... le temps de réponse a expiré.")
                 setTimeout(() => {
                     message.channel.bulkDelete(2, true)
-                }, expirationTime);
+                }, 5000);
                 } else {
                 const confirmation = firstMessageConfirmation.content;
 
@@ -434,12 +469,6 @@ module.exports.run = async(client, message) => {
                         infos["latestUserAvatar"] = message.author.displayAvatarURL();
                         fs.writeFileSync('./infos.json', JSON.stringify(infos))
                         message.channel.send(`$fksend`)
-                        message.author.send(new Discord.MessageEmbed()
-                        .setColor('#137911')
-                        .setTitle("FallenBot")
-                        .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
-                        .setDescription(`Nous vous remercions d'avoir utilisé [FallenBot](https://github.com/IkaRio198/FallenBot) !\n       → N'hésitez pas à nous laisser un avis dans <#353483147582636032> !`)
-                        )
                         setTimeout(() => {
                             message.channel.bulkDelete(5, true)
                         }, 1000);
@@ -467,25 +496,32 @@ module.exports.run = async(client, message) => {
                 fkconfig["color"] = "#137911";
                 fs.writeFileSync('./fkconfig.json', JSON.stringify(fkconfig))
 
-                message.guild.channels.cache.get(fkChannel).overwritePermissions([
+                message.guild.channels.cache.get(config["fk-config_channel-id"]).overwritePermissions([
                     {
                         id: message.guild.roles.everyone.id,
                        allow: ['VIEW_CHANNEL'],
                     }
                   ]);
-                  message.guild.channels.cache.get(fkChannel).updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
+                  message.guild.channels.cache.get(config["fk-config_channel-id"]).updateOverwrite(message.author.id, { VIEW_CHANNEL: null });
             break;
         }
     })
 } else {
-    message.delete();
     message.author.send(new Discord.MessageEmbed()
     .setColor('#AF1111')
     .setTitle("FallenBot - Erreur")
     .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
-    .setDescription(`Les commandes doivent être exécutées exclusivement dans le salon <#${fkChannel}> !`)
+    .setDescription(`Une erreur s'est produite. Essayez d'utiliser la commande \`$fkconfig\` dans le salon <#${config["fk-config_channel-id"]}> afin de résoudre le problème.\n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)`)
     );
-};
+}
+        } else {
+            message.author.send(new Discord.MessageEmbed()
+            .setColor('#AF1111')
+            .setTitle("FallenBot - Erreur")
+            .setURL('https://github.com/Etrenak/FallenKingdom/wiki/FallenBot')
+            .setDescription(`Une erreur s'est produite. Essayez de configurer correctement le bot via la commande \`$fksettings\` afin de résoudre le problème.\n      → [Aide FallenBot](https://github.com/Etrenak/FallenKingdom/wiki/FallenBot)`)
+            );
+        }
 };
 
     

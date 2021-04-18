@@ -31,3 +31,14 @@ RETRAIT      = [-]
 [*] La commande $fksend ne peut plus être utilisé
 [*] Le code est désormais plus lisible et compréhensible
 [*] Correction d'un bug avec le @Notif FK
+--------
+
+    >> 1.3.0
+[+] Ajout d'un avertissement si le bot n'est pas à jour
+[+] Ajout d'une commande pour configurer les salons et le rôle sur le serveur Discord
+[+] Ajout d'un temps d'expiration avec la commande $fkconfig
+[*] Correction d'un bug où les messages d'annulation prenaient énormément de temps à s'effacer
+[*] Correction d'un bug où le bot pouvait envoyer un message privé à l'exécuteur disant que l'annonce a été envoyée avec succès alors que non
+[*] Correction du compteur d'annonces
+[*] Correction de la langue dans certains messages
+[-] La mention du @Notif FK n'est plus envoyée dans un second message

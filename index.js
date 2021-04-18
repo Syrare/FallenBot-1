@@ -1,13 +1,23 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const fs = require ('fs');
+const token = require('./token.json');
 
-client.login(process.env.TOKEN);
+
+if (token["fallenbot_token"] === "PLACEZ LE TOKEN ICI") {
+    console.warn("Attention: Le token n'a pas été défini ! Pour obtenir de l'aide → https://github.com/Etrenak/FallenKingdom/wiki/FallenBot")
+} else {
+client.login(token["fallenbot_token"])
+    .catch(error => {
+        console.error(`Erreur: Token invalide\n${error}`);
+        process.exit(1);
+    });
+}
 
 client.commands = new Discord.Collection();
 
 fs.readdir("./Commandes/", (error, f) => {
-    if(error) console.log(error);
+    if (error) console.log(error);
 
     let commandes = f.filter(f => f.split(".").pop() === "js");
     if(commandes.length <= 0) return console.log("Aucune commande détecter.");
@@ -22,7 +32,7 @@ fs.readdir("./Commandes/", (error, f) => {
 });
 
 fs.readdir("./Events/", (error, f) => {
-    if(error) console.log(error);
+    if (error) console.log(error);
     console.log(`Il y a ${f.length} events en cours de chargement.`);
 
     f.forEach((f) => {
